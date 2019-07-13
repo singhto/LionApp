@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lion_app/screens/register.dart';
 
 class Authen extends StatefulWidget {
   @override
@@ -57,7 +58,13 @@ class _AuthenState extends State<Authen> {
   Widget signUpButton() {
     return RaisedButton(
       child: Text('Sign Up'),
-      onPressed: () {},
+      onPressed: () {
+        print('You Click Sign Up');
+
+        var registerRoute =
+            MaterialPageRoute(builder: (BuildContext context) => Register());
+            Navigator.of(context).push(registerRoute);
+      },
     );
   }
 
@@ -86,11 +93,13 @@ class _AuthenState extends State<Authen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(resizeToAvoidBottomPadding: false,
+    return Scaffold(
+      resizeToAvoidBottomPadding: false,
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
-          colors: [Colors.white, Colors.blue[200]],begin: Alignment.topLeft,
+          colors: [Colors.white, Colors.blue[200]],
+          begin: Alignment.topLeft,
         )),
         padding: EdgeInsets.only(top: 60.0),
         alignment: Alignment.topCenter,
