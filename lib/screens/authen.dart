@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lion_app/models/user_model.dart';
 import 'package:lion_app/screens/register.dart';
+import 'package:http/http.dart' show get;
+import 'dart:convert';
 
 class Authen extends StatefulWidget {
   @override
@@ -8,6 +11,9 @@ class Authen extends StatefulWidget {
 
 class _AuthenState extends State<Authen> {
   // Explicit
+  final formKey = GlobalKey<FormState>();
+  String user, password;
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Method
   Widget showText() {
@@ -34,6 +40,14 @@ class _AuthenState extends State<Authen> {
       width: 250.0,
       child: TextFormField(
         decoration: InputDecoration(labelText: 'User :'),
+        validator: (String value) {
+          if (value.isEmpty) {
+            return 'User is Empty';
+          }
+        },
+        onSaved: (String value) {
+          user = value;
+        },
       ),
     );
   }
@@ -44,6 +58,14 @@ class _AuthenState extends State<Authen> {
       child: TextFormField(
         obscureText: true,
         decoration: InputDecoration(labelText: 'Password :'),
+        validator: (String value) {
+          if (value.isEmpty) {
+            return 'Password is Empty';
+          }
+        },
+        onSaved: (String value) {
+          password = value;
+        },
       ),
     );
   }
@@ -51,8 +73,58 @@ class _AuthenState extends State<Authen> {
   Widget signInButton() {
     return RaisedButton(
       child: Text('Sign In'),
-      onPressed: () {},
+      onPressed: () {
+        if (formKey.currentState.validate()) {
+          formKey.currentState.save();
+          print('user = $user, pasword = $password');
+          checkAuten();
+        }
+      },
     );
+  }
+
+  Future<void> checkAuten() async {
+    String url =
+        'https://www.androidthai.in.th/lion/getUserWhereUserLion.php?isAdd=true&User=$user';
+    var response = await get(url);
+    var result = json.decode(response.body);
+    print('result = $result');
+
+    if ((result.toString()) == 'null') {
+      // User False
+      mySnackbar('No $user in my Database');
+    } else {
+      // User True
+
+      for (var objJSON in result) {
+        print('objJSON = $objJSON');
+        UserModel userModel = UserModel.fromJson(objJSON);
+        print('Name from JSON = ${userModel.nameString}');
+
+        String truePassword = userModel.passwordString.toString();
+
+        if (password == truePassword) {
+          // Password True
+        } else {
+          // Password False
+          mySnackbar('Please Try Again Password False');
+        }
+      }
+    }
+  }
+
+  void mySnackbar(String messageString) {
+    SnackBar snackBar = SnackBar(
+      content: Text(messageString),
+      backgroundColor: Colors.blue[500],
+      duration: Duration(seconds: 8),
+      action: SnackBarAction(
+        textColor: Colors.red,
+        label: 'Close',
+        onPressed: () {},
+      ),
+    );
+    scaffoldKey.currentState.showSnackBar(snackBar);
   }
 
   Widget signUpButton() {
@@ -63,7 +135,7 @@ class _AuthenState extends State<Authen> {
 
         var registerRoute =
             MaterialPageRoute(builder: (BuildContext context) => Register());
-            Navigator.of(context).push(registerRoute);
+        Navigator.of(context).push(registerRoute);
       },
     );
   }
@@ -94,6 +166,7 @@ class _AuthenState extends State<Authen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       resizeToAvoidBottomPadding: false,
       body: Container(
         decoration: BoxDecoration(
@@ -103,14 +176,17 @@ class _AuthenState extends State<Authen> {
         )),
         padding: EdgeInsets.only(top: 60.0),
         alignment: Alignment.topCenter,
-        child: Column(
-          children: <Widget>[
-            showLogo(),
-            showText(),
-            userText(),
-            passwordText(),
-            showButton(),
-          ],
+        child: Form(
+          key: formKey,
+          child: Column(
+            children: <Widget>[
+              showLogo(),
+              showText(),
+              userText(),
+              passwordText(),
+              showButton(),
+            ],
+          ),
         ),
       ),
     );
